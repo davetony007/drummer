@@ -8,10 +8,11 @@ A modern, web-based drum machine and sequencer.
 The application is built with Vite, React, and TypeScript, utilizing Tone.js for the core audio engine.
 
 ### Features
-- **AudioEngine (Tone.js):** Uses `Tone.Players` instances, loaded dynamically from the `DRUM_SAMPLES` constants catalog which contains 49 .wav files (Kicks, Snares, Hats, Percs, Cymbals, Toms) pulled from the `stargate-sample-pack`. Includes Master Volume, Tape Distortion plugins, and Swing offsets.
+- **AudioEngine (Tone.js):** Uses `Tone.Players` instances, loaded dynamically from the `DRUM_SAMPLES` constants catalog which contains 49 .wav files (Kicks, Snares, Hats, Percs, Cymbals, Toms) pulled from the `stargate-sample-pack`. Includes Master Volume, Tape Distortion plugins, Swing offsets, and Jank (per-note timing and velocity humanization).
 - **Zustand Orchestrator:** State tracks 6 patterns of 16 steps along with dynamic track array configurations.
+- **Song Mode Structure:** Build complete arrangements by chaining patterns together. Define how many times each pattern block repeats (bars) before automatically advancing to the next, allowing for full song composition directly within the app.
 - **UI Interaction:** The interface features a sleek, modern studio drum machine design with deep brushed-metal backgrounds, precise hardware button styling, neon active-state highlights, and an optimized, compact layout.
-- **Track Selection & Additions:** Click any track's row header to open a dropdown sample picker. Swap samples mid-playback or use the "Add Track" button at the bottom of the sequencer to add an entirely new lane (and sound) into your sequence block.
+- **Track Mixing & Selection:** Per-track Volume and Panning using `Tone.Channel`. Click any track's row header to open a dropdown sample picker. Swap samples mid-playback or use the "Add Track" button at the bottom of the sequencer to add an entirely new lane (and sound) into your sequence block.
 - **Transport & Storage:** Includes Save and Load functionality (`Ctrl+S`, `Ctrl+O`) and spacebar transport controls.
 - **Step Modifiers:** Shift-click to toggle Ratcheting sub-hits, Alt-click to toggle triplets.
 - **Kit Generation:** Features a `RND KIT` button to randomly load a fresh sample kit.
