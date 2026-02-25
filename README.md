@@ -1,73 +1,35 @@
-# React + TypeScript + Vite
+# Drummer PC
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, web-based drum machine and sequencer. 
 
-Currently, two official plugins are available:
+## Overview
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+The application is built with Vite, React, and TypeScript, utilizing Tone.js for the core audio engine.
 
-## React Compiler
+### Features
+- **AudioEngine (Tone.js):** Uses `Tone.Players` instances, loaded dynamically from the `DRUM_SAMPLES` constants catalog which contains 49 .wav files (Kicks, Snares, Hats, Percs, Cymbals, Toms) pulled from the `stargate-sample-pack`. Includes Master Volume, Tape Distortion plugins, and Swing offsets.
+- **Zustand Orchestrator:** State tracks 6 patterns of 16 steps along with dynamic track array configurations.
+- **UI Interaction:** The interface features a sleek, modern studio drum machine design with deep brushed-metal backgrounds, precise hardware button styling, neon active-state highlights, and an optimized, compact layout.
+- **Track Selection & Additions:** Click any track's row header to open a dropdown sample picker. Swap samples mid-playback or use the "Add Track" button at the bottom of the sequencer to add an entirely new lane (and sound) into your sequence block.
+- **Transport & Storage:** Includes Save and Load functionality (`Ctrl+S`, `Ctrl+O`) and spacebar transport controls.
+- **Step Modifiers:** Shift-click to toggle Ratcheting sub-hits, Alt-click to toggle triplets.
+- **Kit Generation:** Features a `RND KIT` button to randomly load a fresh sample kit.
+- **Metronome:** Includes a click track Metronome toggle.
+- **Presets:** 20 built-in drum patterns categorized into Rock, Pop, Disco, and Rap. Load via the "PRESETS" dropdown to automatically overwrite the current pattern and set the optimal genre tempo.
+- **Audio Export:** Tone.js `Recorder` intercepts the main output allowing the 'P' button to extract your generated loops into `.webm` audio files instantly.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Getting Started
 
-## Expanding the ESLint configuration
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+2. Start the development server:
+   ```bash
+   npm run dev
+   ```
+3. Open your browser to [http://localhost:5173/](http://localhost:5173/).
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## Future Enhancements
+- Continued improvements to audio engine timing and swing.
+- Expanded keyboard interactivity (Hotkeys mapping to UI behaviors).
