@@ -1,0 +1,1 @@
+{"root":["./src/main.tsx","./src/audio/engine.ts","./src/components/application.tsx","./src/components/knob.tsx","./src/components/trackheader.tsx","./src/constants/presets.ts","./src/constants/samples.ts","./src/store/usesequencerstore.ts"],"version":"5.9.3"}
