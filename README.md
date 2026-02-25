@@ -1,4 +1,5 @@
 # Drummer PC
+<img width="1506" height="843" alt="image" src="https://github.com/user-attachments/assets/9fa88cd1-09a1-4b01-b88f-432f1d468c16" />
 
 A modern, web-based drum machine and sequencer. 
 
