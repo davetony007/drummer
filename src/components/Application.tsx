@@ -1,10 +1,12 @@
 import { useSequencerStore, PatternId } from '../store/useSequencerStore';
 import clsx from 'clsx';
-import { Play, Square, Circle, Plus } from 'lucide-react';
+import { Play, Square, Circle, Plus, ListMusic } from 'lucide-react';
 import { Knob } from './Knob';
 import { TrackHeader } from './TrackHeader';
+import { SongModeEditor } from './SongModeEditor';
 import { useEffect } from 'react';
 import { PRESETS } from '../constants/presets';
+import { PATTERN_LABELS } from '../constants/songStructures';
 
 export function Application() {
     const store = useSequencerStore();
@@ -117,19 +119,47 @@ export function Application() {
                     {/* Patterns Selection */}
                     <div className="flex flex-col gap-4">
                         <div className="flex gap-2 items-center bg-[#181818] p-2 rounded border border-[#2a2a2a]">
-                            <span className="text-xs font-bold tracking-widest text-studio-text-muted uppercase mr-2">Pattern</span>
-                            {[1, 2, 3, 4, 5, 6].map(id => (
+                            <span className="text-xs font-bold tracking-widest text-studio-text-muted uppercase mr-2 flex flex-col items-center">
+                                Pattern
                                 <button
-                                    key={`pat-${id}`}
-                                    onClick={() => handlePatternSelect(id as PatternId)}
                                     className={clsx(
-                                        "w-10 h-10 flex flex-col items-center pt-2 font-bold text-sm studio-btn relative rounded-[3px] transition-colors",
-                                        store.activePatternId === id ? "active text-studio-active" : "text-studio-text"
+                                        "mt-1 px-1.5 py-0.5 text-[8px] rounded border transition-colors flex items-center gap-1",
+                                        store.songMode
+                                            ? "text-studio-accent border-studio-accent bg-studio-accent/10"
+                                            : "text-studio-text-muted border-studio-border hover:text-studio-text"
                                     )}
+                                    onClick={() => store.setSongMode(!store.songMode)}
                                 >
-                                    {id}
-                                    <span className="text-[9px] text-studio-text-muted absolute bottom-0.5 right-1 leading-none">{store.patterns[id as PatternId].loopState}</span>
+                                    <ListMusic size={10} /> SONG MODE
                                 </button>
+                            </span>
+                            {[1, 2, 3, 4, 5, 6].map(id => (
+                                <div key={`pat-${id}`} className="relative group">
+                                    <button
+                                        onClick={() => handlePatternSelect(id as PatternId)}
+                                        className={clsx(
+                                            "w-12 h-12 flex flex-col items-center justify-center font-bold studio-btn relative rounded-[3px] transition-colors",
+                                            store.activePatternId === id ? "active text-studio-active" : "text-studio-text"
+                                        )}
+                                    >
+                                        <span className="text-[10px] tracking-wider mb-1">{PATTERN_LABELS[id as PatternId]}</span>
+                                        <span className="text-[9px] text-studio-text-muted absolute bottom-0.5 right-1 leading-none">{store.patterns[id as PatternId].loopState}</span>
+                                    </button>
+
+                                    {/* Add to Chain button visible in song mode */}
+                                    {store.songMode && (
+                                        <button
+                                            className="absolute -top-2 -right-2 bg-[#333] border border-[#555] rounded-full text-white w-4 h-4 flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-studio-accent transition-all z-10"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                store.addToChain(id as PatternId);
+                                            }}
+                                            title="Add to song chain"
+                                        >
+                                            <Plus size={10} strokeWidth={3} />
+                                        </button>
+                                    )}
+                                </div>
                             ))}
                         </div>
                     </div>
@@ -164,6 +194,9 @@ export function Application() {
                     <Knob value={store.tapeDistortion} onChange={store.setTapeDistortion} label="TAPE" size={48} />
                 </div>
             </div>
+
+            {/* Song Mode Chain Editor */}
+            <SongModeEditor />
 
             {/* Sequencer Section */}
             <div className="relative z-10 flex flex-col gap-1.5 mt-2 bg-[#181818] p-3 rounded border border-[#2a2a2a] overflow-x-hidden overflow-y-auto custom-scrollbar" style={{ maxHeight: '400px' }}>
@@ -254,6 +287,12 @@ export function Application() {
                         onClick={() => store.setJank((store.jank + 1) % 10)}
                     >
                         JANK {store.jank > 0 ? `[${store.jank}]` : ''}
+                    </button>
+                    <button
+                        className={clsx("studio-btn px-6 py-2 text-xs font-bold uppercase tracking-widest", store.autoFill > 0 ? "active text-studio-accent" : "text-studio-text")}
+                        onClick={() => store.cycleAutoFill()}
+                    >
+                        AUTO-FILL {store.autoFill > 0 ? `[${store.autoFill} BARS]` : ''}
                     </button>
                     <button
                         className="studio-btn px-6 py-2 text-xs font-bold text-studio-text uppercase tracking-widest"

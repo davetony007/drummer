@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { engine } from '../audio/Engine';
 import { DRUM_SAMPLES, SampleCategory } from '../constants/samples';
 import { PresetData } from '../constants/presets';
+import { SongStructure } from '../constants/songStructures';
 
 export type PatternId = 1 | 2 | 3 | 4 | 5 | 6;
 export type LoopState = 'L' | 2 | 4 | 8 | 16;
@@ -39,6 +40,7 @@ export interface AppState {
     swing: number;
     jank: number; // 0-9
     isMetronomeEnabled: boolean;
+    autoFill: number; // 0, 4, 8
 
     // Patterns
     activePatternId: PatternId;
@@ -46,6 +48,11 @@ export interface AppState {
 
     // Seq State
     currentStep: number;
+
+    // Song Mode
+    songMode: boolean;
+    patternChain: PatternId[];
+    currentChainIndex: number;
 
     // Actions
     togglePlay: () => void;
@@ -56,6 +63,7 @@ export interface AppState {
     setTapeDistortion: (val: number) => void;
     setSwing: (val: number) => void;
     setJank: (val: number) => void;
+    cycleAutoFill: () => void;
     setTrackVolume: (trackId: string, gain: number) => void;
     setTrackPan: (trackId: string, pan: number) => void;
     setActivePattern: (id: PatternId) => void;
@@ -70,6 +78,15 @@ export interface AppState {
     loadState: () => void;
     randomizeKit: (patternId?: PatternId) => void;
     loadPreset: (preset: PresetData) => void;
+
+    // Song Mode Actions
+    setSongMode: (active: boolean) => void;
+    addToChain: (id: PatternId) => void;
+    removeFromChain: (index: number) => void;
+    clearChain: () => void;
+    loadSongChain: (chain: PatternId[]) => void;
+    loadSongPreset: (preset: SongStructure) => void;
+    prepareNextPatternInChain: () => void;
 }
 
 const createEmptySteps = (): StepData[] =>
@@ -124,17 +141,22 @@ export const useSequencerStore = create<AppState>()((set, get) => ({
     swing: 0,
     jank: 0,
     isMetronomeEnabled: false,
+    autoFill: 0,
 
     activePatternId: 1,
     patterns: initialPatterns,
     currentStep: 0,
+
+    songMode: false,
+    patternChain: [],
+    currentChainIndex: 0,
 
     togglePlay: () => {
         set(state => {
             const next = !state.isPlaying;
             if (next) engine.initialize().then(() => engine.startTransport());
             else engine.stopTransport();
-            return { isPlaying: next, currentStep: next ? state.currentStep : 0 };
+            return { isPlaying: next, currentStep: next ? state.currentStep : 0, currentChainIndex: next ? 0 : state.currentChainIndex };
         });
     },
 
@@ -160,6 +182,12 @@ export const useSequencerStore = create<AppState>()((set, get) => ({
     },
 
     setJank: (val) => set({ jank: val }),
+
+    cycleAutoFill: () => set(state => {
+        if (state.autoFill === 0) return { autoFill: 4 };
+        if (state.autoFill === 4) return { autoFill: 8 };
+        return { autoFill: 0 };
+    }),
 
     setSwing: (val) => {
         engine.setSwing(val);
@@ -392,6 +420,7 @@ export const useSequencerStore = create<AppState>()((set, get) => ({
             tapeDistortion: state.tapeDistortion,
             swing: state.swing,
             jank: state.jank,
+            autoFill: state.autoFill,
             patterns: state.patterns
         };
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData, null, 2));
@@ -421,6 +450,7 @@ export const useSequencerStore = create<AppState>()((set, get) => ({
                             tapeDistortion: parsed.tapeDistortion ?? 0,
                             swing: typeof parsed.swing === 'number' ? parsed.swing : 0,
                             jank: parsed.jank ?? 0,
+                            autoFill: parsed.autoFill ?? 0,
                             patterns: parsed.patterns
                         });
                         engine.setTempo(parsed.tempo ?? 120);
@@ -437,5 +467,85 @@ export const useSequencerStore = create<AppState>()((set, get) => ({
             reader.readAsText(file);
         };
         input.click();
-    }
+    },
+
+    setSongMode: (active) => set({ songMode: active, currentChainIndex: 0 }),
+
+    addToChain: (id) => set(state => ({ patternChain: [...state.patternChain, id] })),
+
+    removeFromChain: (index) => set(state => {
+        const chain = [...state.patternChain];
+        chain.splice(index, 1);
+        return { patternChain: chain };
+    }),
+
+    clearChain: () => set({ patternChain: [], currentChainIndex: 0 }),
+
+    loadSongChain: (chain) => set({ patternChain: chain, currentChainIndex: 0 }),
+
+    loadSongPreset: (preset) => set(state => {
+        const patterns = { ...state.patterns };
+
+        // For each pattern defined in the preset
+        Object.keys(preset.patterns).forEach(patIdStr => {
+            const patternId = Number(patIdStr) as PatternId;
+            const presetTracks = preset.patterns[patternId];
+            if (!presetTracks) return;
+
+            // Rebuild tracks based on the preset definition
+            const newTracks = presetTracks.map((pTrack, index) => {
+                const sample = getRandomSample(pTrack.category);
+                const steps = createEmptySteps();
+                for (let i = 0; i < 16; i++) {
+                    if (pTrack.pattern[i] === '1') {
+                        steps[i].active = true;
+                        steps[i].velocity = 3;
+                    }
+                }
+                return {
+                    id: `track-${Date.now()}-${patternId}-${index}`,
+                    name: sample.label,
+                    category: pTrack.category,
+                    sampleUrl: sample.url,
+                    gain: 0.8,
+                    pan: 0,
+                    steps
+                };
+            });
+
+            patterns[patternId] = {
+                ...patterns[patternId],
+                tracks: newTracks
+            };
+        });
+
+        // Set the active pattern to the first one in the chain, or Pattern 1
+        const nextActiveId = preset.chain.length > 0 ? preset.chain[0] : 1;
+
+        engine.setTempo(preset.tempo);
+        engine.updateTracks(patterns[nextActiveId].tracks);
+
+        return {
+            patternChain: preset.chain,
+            currentChainIndex: 0,
+            patterns,
+            tempo: preset.tempo,
+            activePatternId: nextActiveId
+        };
+    }),
+
+    prepareNextPatternInChain: () => set(state => {
+        if (!state.songMode || state.patternChain.length === 0) return state;
+
+        const nextIndex = (state.currentChainIndex + 1) % state.patternChain.length;
+        const nextPatternId = state.patternChain[nextIndex];
+
+        // Let the engine know about the track updates for the new pattern
+        engine.updateTracks(state.patterns[nextPatternId].tracks);
+
+        return {
+            currentChainIndex: nextIndex,
+            activePatternId: nextPatternId
+        };
+    })
 }));
