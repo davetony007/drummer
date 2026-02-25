@@ -10,11 +10,16 @@ export const PATTERN_LABELS: Record<PatternId, string> = {
     6: 'OUTRO'
 };
 
+export interface ChainItem {
+    patternId: PatternId;
+    bars: number;
+}
+
 export interface SongStructure {
     name: string;
     style: string;
     tempo: number;
-    chain: PatternId[];
+    chain: ChainItem[];
     description: string;
     patterns: Partial<Record<PatternId, PresetTrackData[]>>;
 }
@@ -24,7 +29,15 @@ export const SONG_STRUCTURES: SongStructure[] = [
         name: "The Early Fab Four",
         style: "60s Pop",
         tempo: 130,
-        chain: [1, 2, 2, 4, 2, 5, 2, 4, 6], // Intro, V, V, C, V, Bridge, V, C, Outro
+        chain: [
+            { patternId: 1, bars: 4 }, // Intro
+            { patternId: 2, bars: 8 }, // Verse
+            { patternId: 4, bars: 8 }, // Chorus
+            { patternId: 2, bars: 8 }, // Verse
+            { patternId: 5, bars: 4 }, // Bridge
+            { patternId: 4, bars: 8 }, // Chorus
+            { patternId: 6, bars: 6 }  // Outro
+        ],
         description: "A classic bouncy pop structure with a distinct middle 8.",
         patterns: {
             1: [ // INTRO (Ringo style tom build)
@@ -60,7 +73,18 @@ export const SONG_STRUCTURES: SongStructure[] = [
         name: "The Stadium Anthem",
         style: "Arena Rock",
         tempo: 85,
-        chain: [1, 2, 3, 4, 2, 3, 4, 5, 4, 4, 6],
+        chain: [
+            { patternId: 1, bars: 4 }, // Intro
+            { patternId: 2, bars: 8 }, // Verse
+            { patternId: 3, bars: 4 }, // Pre-Chorus
+            { patternId: 4, bars: 8 }, // Chorus
+            { patternId: 2, bars: 8 }, // Verse
+            { patternId: 3, bars: 4 }, // Pre-Chorus
+            { patternId: 4, bars: 8 }, // Chorus
+            { patternId: 5, bars: 8 }, // Solo
+            { patternId: 4, bars: 16 }, // Double Chorus
+            { patternId: 6, bars: 8 }   // Outro
+        ],
         description: "Big buildup with a pre-chorus leading into massive choruses (Queen style).",
         patterns: {
             1: [ // INTRO (Boom boom clap!)
@@ -98,7 +122,16 @@ export const SONG_STRUCTURES: SongStructure[] = [
         name: "The Heavy Groove",
         style: "70s Hard Rock",
         tempo: 95,
-        chain: [1, 2, 2, 4, 5, 2, 4, 6], // Intro, V, V, C, Solo, V, C, Outro
+        chain: [
+            { patternId: 1, bars: 4 }, // Intro
+            { patternId: 2, bars: 8 }, // Verse
+            { patternId: 4, bars: 4 }, // Chorus
+            { patternId: 2, bars: 8 }, // Verse
+            { patternId: 4, bars: 4 }, // Chorus
+            { patternId: 5, bars: 8 }, // Solo
+            { patternId: 4, bars: 8 }, // Double Chorus
+            { patternId: 6, bars: 8 }  // Outro
+        ],
         description: "A heavy, swinging groove (Led Zep style).",
         patterns: {
             1: [ // INTRO
@@ -134,7 +167,19 @@ export const SONG_STRUCTURES: SongStructure[] = [
         name: "The Britpop Banger",
         style: "90s Indie",
         tempo: 115,
-        chain: [1, 2, 3, 4, 2, 3, 4, 5, 3, 4, 4, 6], // Oasis style extended outro
+        chain: [
+            { patternId: 1, bars: 4 }, // Intro
+            { patternId: 2, bars: 8 }, // Verse
+            { patternId: 3, bars: 4 }, // Pre-Chorus
+            { patternId: 4, bars: 8 }, // Chorus
+            { patternId: 2, bars: 8 }, // Verse
+            { patternId: 3, bars: 4 }, // Pre-Chorus
+            { patternId: 4, bars: 8 }, // Chorus
+            { patternId: 5, bars: 8 }, // Solo
+            { patternId: 3, bars: 4 }, // Pre-Chorus
+            { patternId: 4, bars: 16 }, // Double Chorus
+            { patternId: 6, bars: 8 }  // Outro
+        ],
         description: "Standard mid-tempo late 90s structure, ending on a massive double chorus.",
         patterns: {
             1: [ // INTRO (Tambourine heavy)

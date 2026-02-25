@@ -34,10 +34,10 @@ export function SongModeEditor() {
                             if (preset) {
                                 if (store.patternChain.length > 0) {
                                     if (confirm("This will overwrite your current chain. Continue?")) {
-                                        store.loadSongChain(preset.chain);
+                                        store.loadSongPreset(preset);
                                     }
                                 } else {
-                                    store.loadSongChain(preset.chain);
+                                    store.loadSongPreset(preset);
                                 }
                             }
                             e.target.value = ""; // reset selection
@@ -54,32 +54,58 @@ export function SongModeEditor() {
                 </div>
             </div>
 
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 custom-scrollbar">
-                {store.patternChain.map((patternId, index) => (
-                    <React.Fragment key={`${index}-${patternId}`}>
-                        <div
-                            className={clsx(
-                                "flex items-center justify-center relative min-w-16 h-8 rounded-[3px] border transition-colors group",
-                                store.isPlaying && store.currentChainIndex === index
-                                    ? "bg-studio-accent/20 border-studio-accent text-studio-accent pb-0" // The current playing item
-                                    : "bg-[#222] border-[#333] text-studio-text hover:border-[#555]"
-                            )}
-                        >
-                            <span className="font-bold text-[10px] tracking-widest px-2">{PATTERN_LABELS[patternId]}</span>
-
-                            {/* Remove button (appears on hover) */}
-                            <button
-                                className="absolute -top-1.5 -right-1.5 bg-[#444] text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 hover:bg-red-500 transition-all z-10"
-                                onClick={() => store.removeFromChain(index)}
-                                title="Remove from chain"
+            <div className="flex items-start gap-2 overflow-x-auto pb-1 custom-scrollbar">
+                {store.patternChain.map((chainItem, index) => (
+                    <React.Fragment key={`${index}-${chainItem.patternId}`}>
+                        <div className="flex flex-col items-center gap-1 w-16">
+                            <div
+                                className={clsx(
+                                    "flex items-center justify-center relative w-full h-8 rounded-[3px] border transition-colors group",
+                                    store.isPlaying && store.currentChainIndex === index
+                                        ? "bg-studio-accent/20 border-studio-accent text-studio-accent pb-0" // The current playing item
+                                        : "bg-[#222] border-[#333] text-studio-text hover:border-[#555]"
+                                )}
                             >
-                                <X size={10} strokeWidth={3} />
-                            </button>
+                                <span className="font-bold text-[10px] tracking-widest px-2">{PATTERN_LABELS[chainItem.patternId]}</span>
+
+                                {/* Remove button (appears on hover) */}
+                                <button
+                                    className="absolute -top-1.5 -right-1.5 bg-[#444] text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 hover:bg-red-500 transition-all z-10"
+                                    onClick={() => store.removeFromChain(index)}
+                                    title="Remove from chain"
+                                >
+                                    <X size={10} strokeWidth={3} />
+                                </button>
+                            </div>
+
+                            {/* Bar selection & Progress */}
+                            <div className="w-full flex flex-col items-center">
+                                <select
+                                    className="bg-transparent text-[9px] text-studio-text-muted outline-none cursor-pointer hover:text-studio-text text-center text-center-last"
+                                    value={chainItem.bars}
+                                    onChange={(e) => store.updateChainItemBars(index, parseInt(e.target.value))}
+                                >
+                                    {[1, 2, 4, 8, 16, 32].map(b => (
+                                        <option key={b} value={b} className="bg-[#222] text-left">
+                                            {b} BAR{b > 1 ? 'S' : ''}
+                                        </option>
+                                    ))}
+                                </select>
+
+                                {store.isPlaying && store.currentChainIndex === index && (
+                                    <div className="w-full h-1 bg-[#111] rounded-full overflow-hidden mt-0.5 border border-[#333]">
+                                        <div
+                                            className="h-full bg-studio-accent transition-all duration-300"
+                                            style={{ width: `${Math.max(5, ((store.currentChainBar) / chainItem.bars) * 100)}%` }}
+                                        />
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
                         {/* Arrow separator, except after the last item */}
                         {index < store.patternChain.length - 1 && (
-                            <div className="text-[#444] font-bold">→</div>
+                            <div className="text-[#444] font-bold mt-1.5">→</div>
                         )}
                     </React.Fragment>
                 ))}

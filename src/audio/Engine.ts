@@ -209,7 +209,7 @@ class AudioEngine {
                     // Schedule the state update slightly in the future to ensure all notes for step 15 finish triggering
                     // before React re-renders, but before step 0 has to be evaluated.
                     Tone.Draw.schedule(() => {
-                        useSequencerStore.getState().prepareNextPatternInChain();
+                        useSequencerStore.getState().advanceSongBar();
                     }, time + 0.01);
                 }
 
